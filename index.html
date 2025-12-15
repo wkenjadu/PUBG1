@@ -79,6 +79,21 @@ function render(teams) {
     wrap.appendChild(div);
   });
 }
+// ================== 점수 룰 ==================
+const placementScore = {1:10,2:6,3:5,4:4,5:3,6:2,7:2,8:2,9:1,10:1,11:1,12:1};
+
+let matchNumber = 1;
+const scores = JSON.parse(localStorage.getItem('scores')||'{}');
+
+function saveScores(){ localStorage.setItem('scores', JSON.stringify(scores)); }
+
+function addMatchScore(teamIndex, rank, kills){
+  const rScore = placementScore[rank] ?? 0;
+  const total = rScore + kills;
+  scores[teamIndex] = (scores[teamIndex]||0) + total;
+  saveScores();
+  alert(`팀 ${teamIndex+1} : ${total}점 반영 (누적 ${scores[teamIndex]})`);
+}
 </script>
 </body>
 </html>
