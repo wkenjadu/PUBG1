@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<title>PUBG 스트리머 팀 자동계산</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<style>
+body { background:#0b1020; color:#e5e7eb; font-family:system-ui; padding:20px; }
+h1 { text-align:center; }
+button { padding:12px 20px; font-size:16px; cursor:pointer; border-radius:8px; border:none; background:#22c55e; color:#000; }
+.teams { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:16px; margin-top:20px; }
+.team { background:#020617; border:1px solid #334155; border-radius:12px; padding:12px; }
+.team h3 { margin:0 0 8px; }
+.player { font-size:14px; margin-left:8px; }
+.score { color:#22c55e; font-weight:bold; }
+</style>
+</head>
+<body>
+<h1>🎮 PUBG 스트리머 대회 팀 자동계산</h1>
+<div style="text-align:center;">
+<button onclick="makeTeams()">팀 자동 생성</button>
+</div>
+<div id="teams" class="teams"></div>
+<script>
+const TEAM_SIZE = 4;
+const TEAM_COUNT = 21;
+
+// 자동 점수 테이블 (예시, 실제로는 DB/Firebase 연동 가능)
+// 스트리머 고정 점수 테이블 (닉네임 → 점수)
+const streamerScoreTable = {
+  "Streamer_1": 95,
+  "Streamer_2": 92,
+  "Streamer_3": 90,
+  "Streamer_4": 88,
+  "Streamer_5": 85,
+  "Streamer_6": 83,
+  "Streamer_7": 80,
+  "Streamer_8": 78,
+  "Streamer_9": 75,
+  "Streamer_10": 73
+  // 필요 시 계속 추가
+};
+
+// 참가자 목록 (고정 점수 자동 매칭)
+const players = Array.from({ length: TEAM_SIZE * TEAM_COUNT }, (_, i) => {
+  const name = `Streamer_${i+1}`;
+  return {
+    name,
+    score: streamerScoreTable[name] ?? (Math.floor(Math.random() * 20) + 70)
+  };
+});
+
+function makeTeams() {
+  const teams = Array.from({ length: TEAM_COUNT }, () => ({ players: [], total: 0 }));
+
+  // 점수 높은 순 정렬
+  players.sort((a,b)=>b.score-a.score);
+
+  players.forEach(p => {
+    const available = teams
+      .filter(t => t.players.length < TEAM_SIZE)
+      .sort((a,b)=>a.total-b.total);
+    available[0].players.push(p);
+    available[0].total += p.score;
+  });
+
+  render(teams);
+}
+
+function render(teams) {
+  const wrap = document.getElementById('teams');
+  wrap.innerHTML = '';
+
+  teams.forEach((t,i)=>{
+    const div = document.createElement('div');
+    div.className = 'team';
+    div.innerHTML = `<h3>팀 ${i+1} <span class="score">(${t.total})</span></h3>` +
+      t.players.map(p=>`<div class="player">${p.name} - ${p.score}</div>`).join('');
+    wrap.appendChild(div);
+  });
+}
+</script>
+</body>
+</html>
